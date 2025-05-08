@@ -1,111 +1,185 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Concrete Strength Prediction System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
-  </head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Concrete Strength Prediction</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   <style>
-      .container{
-      background:black;
-      color: white;
-      border-radius:15px;
-      padding-bottom:20px;
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #f0f8ff, #dbefff);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    h1, h3 {
+      text-align: center;
+      color: #114b8a;
+      text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    }
+
+    .container-box {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 900px;
+      margin: 50px auto;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      animation: fadeInUp 1s ease;
+    }
+
+    .form-label {
+      color: #2c3e50;
+      font-weight: 500;
+    }
+
+    .form-control {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid #cfdce5;
+      color: #333;
+    }
+
+    .form-control:focus {
+      border-color: #5aa9e6;
+      box-shadow: 0 0 6px rgba(90, 169, 230, 0.4);
+    }
+
+    .btn-custom {
+      background: #3498db;
+      border: none;
+      color: #fff;
+      padding: 12px 40px;
+      font-size: 1.1rem;
+      border-radius: 30px;
+      display: block;
+      margin: 30px auto 0;
+      transition: 0.3s ease-in-out;
+      box-shadow: 0 5px 10px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-custom:hover {
+      background: #2980b9;
+      transform: scale(1.05);
+    }
+
+    .result-box {
+      text-align: center;
+      margin-top: 20px;
+      background-color: #e8f4ff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
+    }
+
+    #loadingSpinner {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 100vw;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
       }
-      body{
-      background:light;
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
-      .btn{
-      margin-left:38%;
-      margin-top:20px;
-      }
-      .img {
-    width: 50%;
-    margin-left: 26%;
-    margin-right: 93px;
-}
+    }
   </style>
+</head>
 
+<body>
 
-  <body>
-  <h1 class="text-center">Concrete Strength Prediction</h1>
-      <img class="img" src="{{url_for('static',filename='img.jpg')}}" alt="">
+  <h1 class="animate__animated animate__fadeInDown mt-4">Concrete Strength Predictor</h1>
 
-
-
- <div class="container my-3 mt-3">
-  <h1 class="text-center text-success">Concrete Strength Prediction System</h1>
-
-  <form action="/predict" method="post">
-    <div class="row">
-      <div class="col">
-        <div class="form-group">
-          <label for="cement">Cement</label>
-          <input type="number" class="form-control" id="cement" name="cement" value="0.00" step="any">
-        </div>
-      </div>
-      <div class="col">
-        <div class="form-group">
-          <label for="blastFurnace">blastFurnace</label>
-          <input type="number" class="form-control" id="blastFurnace" name="blastFurnace" value="0.00" step="any">
-        </div>
-      </div>
-      <div class="col">
-        <div class="form-group">
-          <label for="flyAsh">flyAsh</label>
-          <input type="number" class="form-control" id="flyAsh" name="flyAsh" value="0.00" step="any">
-        </div>
-      </div>
+  <!-- Spinner overlay -->
+  <div id="loadingSpinner">
+    <div class="spinner-border text-light" role="status" style="width: 4rem; height: 4rem;">
+      <span class="visually-hidden">Loading...</span>
     </div>
+  </div>
 
-    <div class="row">
-      <div class="col">
-        <div class="form-group">
-          <label for="water">water</label>
-          <input type="number" class="form-control" id="water" name="water" value="0.00" step="any">
+  <div class="container-box animate__animated animate__fadeInUp">
+    <h3>Enter Mix Proportions</h3>
+    <form action="/predict" method="post">
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <label for="cement" class="form-label">Cement</label>
+          <input type="number" class="form-control" id="cement" name="cement" step="any" value="0.00">
+        </div>
+        <div class="col-md-4">
+          <label for="blastFurnace" class="form-label">Blast Furnace</label>
+          <input type="number" class="form-control" id="blastFurnace" name="blastFurnace" step="any" value="0.00">
+        </div>
+        <div class="col-md-4">
+          <label for="flyAsh" class="form-label">Fly Ash</label>
+          <input type="number" class="form-control" id="flyAsh" name="flyAsh" step="any" value="0.00">
         </div>
       </div>
-      <div class="col">
-        <div class="form-group">
-          <label for="superplasticizer">superplasticizer</label>
-          <input type="number" class="form-control" id="superplasticizer" name="superplasticizer" value="0.00" step="any">
-        </div>
-      </div>
-      <div class="col">
-        <div class="form-group">
-          <label for="courseAggregate">courseAggregate</label>
-          <input type="number" class="form-control" id="courseAggregate" name="courseAggregate" value="0.00" step="any">
-        </div>
-      </div>
-    </div>
 
-    <div class="row">
-      <div class="col">
-        <div class="form-group">
-          <label for="fineaggregate">fineaggregate</label>
-          <input type="number" class="form-control" id="fineaggregate" name="fineaggregate" value="0.00" step="any">
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <label for="water" class="form-label">Water</label>
+          <input type="number" class="form-control" id="water" name="water" step="any" value="0.00">
+        </div>
+        <div class="col-md-4">
+          <label for="superplasticizer" class="form-label">Superplasticizer</label>
+          <input type="number" class="form-control" id="superplasticizer" name="superplasticizer" step="any" value="0.00">
+        </div>
+        <div class="col-md-4">
+          <label for="courseAggregate" class="form-label">Coarse Aggregate</label>
+          <input type="number" class="form-control" id="courseAggregate" name="courseAggregate" step="any" value="0.00">
         </div>
       </div>
-      <div class="col">
-        <div class="form-group">
-          <label for="age">age</label>
+
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <label for="fineaggregate" class="form-label">Fine Aggregate</label>
+          <input type="number" class="form-control" id="fineaggregate" name="fineaggregate" step="any" value="0.00">
+        </div>
+        <div class="col-md-6">
+          <label for="age" class="form-label">Age (days)</label>
           <input type="number" class="form-control" id="age" name="age" step="any">
         </div>
       </div>
+
+      <button type="submit" class="btn btn-custom">Predict Strength</button>
+    </form>
+
+    {% if strength %}
+    <div class="result-box animate__animated animate__fadeIn">
+      <h5 class="text-primary mt-4">Predicted Concrete Strength:</h5>
+      <p class="fs-4 fw-bold">{{ strength }}</p>
     </div>
+    {% endif %}
+  </div>
 
-    <button type="submit" class="btn btn-primary btn-lg">get strength</button>
-  </form>
-</div>
+  <script>
+    const form = document.querySelector("form");
+    const spinner = document.getElementById("loadingSpinner");
+    const formBox = document.querySelector(".container-box");
 
+    form.addEventListener("submit", function () {
+      spinner.style.display = "flex";
+      formBox.style.opacity = "0.5";
+    });
+  </script>
 
-      {% if strength %}
-        <h5 class="text-center">Concrete</h5>
-        <p class="text-center">Strength: {{strength}}</p>
-      {% endif %}
-
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-  </body>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
